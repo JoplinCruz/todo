@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pd-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDO List</title>
+    <link rel="stylesheet" href="./src/css/reset.css">
+    <link rel="stylesheet" href="./src/css/vars.css">
+    <link rel="stylesheet" href="./src/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="task-title__container">
+            <h1>ToDO List</h1>
+            <div class="task-input__container">
+                <div class="input__container">
+                    <div class="input__box">
+                        <input type="text" name="task" class="input-task" id="input-task"/>
+                    </div>
+                    <button class="button-add-task" id="button-add-task">+</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="cell__container" id="cell__container">
+            <ul class="task-list" id="task-list">
+                <!-- <li class="cell">
+                    <span class="check">✓</span>
+                    <p name="task-text" class="marked">Comemorar o meu primeiro emprego na área de programação</p>
+                    <span class="remove">✕</span>
+                </li> -->
+            </ul>
+        </div>
+    </main>
+
+    <footer>
+        <p>Copyright ©</p>
+    </footer>
+    <script src="./distro/todo.js"></script>
+</body>
+</html>

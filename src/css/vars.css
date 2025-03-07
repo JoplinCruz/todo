@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Annie+Use+Your+Telescope&family=Fredericka+the+Great&family=Pompiere&family=Smooch+Sans:wght@100..900&family=Syne+Mono&display=swap');
+
+:root {
+    --font-list: "Amatic SC", sans-serif;
+    --font-list-alt-i: "Annie Use Your Telescope", sans-serif;
+    --font-list-alt-ii: "Pompiere", sans-serif;
+    --font-title: "Fredericka the Great", serif;
+    --font-title-alt-i: "Smooch Sans", sans-serif;
+    --font-title-alt-ii: "Syne Mono", serif;
+    --font-size-small: 1rem;
+    --font-size-medium: 1.5rem;
+    --font-size-big: 2rem;
+    --font-size-xtra: 3rem;
+
+    --color-back: #cbcbcb;
+    --color-fore: #2a2a2a;
+    --color-marked: #777;
+    --color-checked: rgb(23, 75, 23);
+    --color-remove: rgb(107, 26, 26);
+    --color-cream: #d6d0ac;
+    --color-grass: #b2c7a5;
+    --color-transparent: #cbcbcb00;
+}
