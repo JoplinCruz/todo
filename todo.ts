@@ -3,7 +3,47 @@ const buttonAdd = document.querySelector(
     "#button-add-task"
 ) as HTMLButtonElement;
 const taskList = document.querySelector("#task-list") as HTMLUListElement;
-// const cellDefault = document.querySelector("#task-list .cell") as HTMLLIElement;
+
+interface ColorMaker {
+    colors: string[];
+    shadow: string[];
+    lastColor: string;
+    get: () => string;
+}
+class MakeColor implements ColorMaker {
+    colors: string[];
+    shadow: string[];
+    lastColor: string;
+    constructor() {
+        this.colors = [
+            "--color-cream",
+            "--color-grass",
+            "--color-cielo",
+            "--color-grenade",
+            "--color-rose",
+        ];
+        this.shadow = [...this.colors];
+        this.lastColor = "";
+    }
+    get(): string {
+        if (!this.shadow.length) this.shadow.push(...this.colors);
+
+        let length = this.shadow.length - 1;
+        let choice = (Math.random() * length) >> 0;
+        let color = this.shadow[choice];
+
+        if (color === this.lastColor) {
+            choice = choice === length ? choice-- : choice++;
+            color = this.shadow[choice];
+        }
+
+        this.lastColor = color;
+        this.shadow.splice(choice, 1);
+        return color;
+    }
+}
+
+const makeColor = new MakeColor();
 
 type Task = {
     checked: boolean;
@@ -12,17 +52,6 @@ type Task = {
 
 const taskStorage: Task[] =
     JSON.parse(localStorage.getItem("data") as string) || [];
-
-if (taskStorage.length) {
-    for (let task of taskStorage) {
-        console.log(task);
-        createCell(task.task, task.checked);
-    }
-}
-
-window.onload = (event) => {
-    console.log("Welcome to ToDO List");
-};
 
 async function saveTaskList(data: Task[]) {
     let taskString = JSON.stringify(data);
@@ -36,11 +65,10 @@ async function saveTaskList(data: Task[]) {
 async function changeCell(event: Event) {
     let target = event.target as HTMLElement;
     let parent = target.offsetParent;
-    let index = [].indexOf.call(taskList?.children, parent as never);
+    let index: number = [].indexOf.call(taskList?.children, parent as never);
 
     if (target.className === "remove") {
         taskList?.removeChild(parent as Node);
-        // delete taskStorage[index];
         taskStorage.splice(index, 1);
     }
     if (target.className === "check") {
@@ -49,7 +77,6 @@ async function changeCell(event: Event) {
                 .namedItem("task-text")
                 ?.classList.contains("marked")
         ) {
-            // console.log("it is marked");
             target.innerText = "○";
             parent?.children.namedItem("task-text")?.classList.remove("marked");
             taskStorage[index].checked = false;
@@ -84,6 +111,9 @@ async function createCell(taskText: string, checked: boolean) {
         await cell.appendChild(check);
         await cell.appendChild(task);
         await cell.appendChild(remove);
+
+        let color: string = makeColor.get();
+        cell.style.background = `linear-gradient(to right, var(--color-transparent), var(${color}) 25%, var(${color}) 75%, var(--color-transparent) 100%)`;
 
         await cell.addEventListener("click", changeCell);
 
@@ -132,5 +162,14 @@ inputTask?.addEventListener("keydown", async (event) => {
         }
     }
 });
+
+window.onload = async (event) => {
+    console.log("Welcome to the ToDO List");
+    if (taskStorage.length) {
+        for (let task of taskStorage) {
+            await createCell(task.task, task.checked);
+        }
+    }
+};
 
 // cellDefault?.addEventListener("click", changeCell);

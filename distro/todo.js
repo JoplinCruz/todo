@@ -11,16 +11,35 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const inputTask = document.querySelector("#input-task");
 const buttonAdd = document.querySelector("#button-add-task");
 const taskList = document.querySelector("#task-list");
-const taskStorage = JSON.parse(localStorage.getItem("data")) || [];
-if (taskStorage.length) {
-    for (let task of taskStorage) {
-        console.log(task);
-        createCell(task.task, task.checked);
+class MakeColor {
+    constructor() {
+        this.colors = [
+            "--color-cream",
+            "--color-grass",
+            "--color-cielo",
+            "--color-grenade",
+            "--color-rose",
+        ];
+        this.shadow = [...this.colors];
+        this.lastColor = "";
+    }
+    get() {
+        if (!this.shadow.length)
+            this.shadow.push(...this.colors);
+        let length = this.shadow.length - 1;
+        let choice = (Math.random() * length) >> 0;
+        let color = this.shadow[choice];
+        if (color === this.lastColor) {
+            choice = choice === length ? choice-- : choice++;
+            color = this.shadow[choice];
+        }
+        this.lastColor = color;
+        this.shadow.splice(choice, 1);
+        return color;
     }
 }
-window.onload = (event) => {
-    console.log("Welcome to ToDO List");
-};
+const makeColor = new MakeColor();
+const taskStorage = JSON.parse(localStorage.getItem("data")) || [];
 function saveTaskList(data) {
     return __awaiter(this, void 0, void 0, function* () {
         let taskString = JSON.stringify(data);
@@ -40,12 +59,10 @@ function changeCell(event) {
         let index = [].indexOf.call(taskList === null || taskList === void 0 ? void 0 : taskList.children, parent);
         if (target.className === "remove") {
             taskList === null || taskList === void 0 ? void 0 : taskList.removeChild(parent);
-            // delete taskStorage[index];
             taskStorage.splice(index, 1);
         }
         if (target.className === "check") {
             if ((_a = parent === null || parent === void 0 ? void 0 : parent.children.namedItem("task-text")) === null || _a === void 0 ? void 0 : _a.classList.contains("marked")) {
-                // console.log("it is marked");
                 target.innerText = "○";
                 (_b = parent === null || parent === void 0 ? void 0 : parent.children.namedItem("task-text")) === null || _b === void 0 ? void 0 : _b.classList.remove("marked");
                 taskStorage[index].checked = false;
@@ -76,6 +93,8 @@ function createCell(taskText, checked) {
             yield cell.appendChild(check);
             yield cell.appendChild(task);
             yield cell.appendChild(remove);
+            let color = makeColor.get();
+            cell.style.background = `linear-gradient(to right, var(--color-transparent), var(${color}) 25%, var(${color}) 75%, var(--color-transparent) 100%)`;
             yield cell.addEventListener("click", changeCell);
             yield taskList.appendChild(cell);
         }
@@ -124,4 +143,12 @@ inputTask === null || inputTask === void 0 ? void 0 : inputTask.addEventListener
         }
     }
 }));
+window.onload = (event) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Welcome to the ToDO List");
+    if (taskStorage.length) {
+        for (let task of taskStorage) {
+            yield createCell(task.task, task.checked);
+        }
+    }
+});
 // cellDefault?.addEventListener("click", changeCell);

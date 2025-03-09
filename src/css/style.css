@@ -48,11 +48,11 @@ header {
 
 .input__box {
     width: 100%;
-    height: 2rem;
+    height: 2.6rem;
     display: flex;
     align-items: center;
     background-color: #dedede76;
-    border-radius: 1rem;
+    border-radius: 1.3rem;
     border: .1rem solid #efefef;
     padding: 0 .5rem;
     margin-right: .5rem;
@@ -121,8 +121,8 @@ main {
     position: relative;
     display: flex;
     align-items: center;
-    padding: .8rem;
-    padding-left: 2.3rem;
+    padding: .8rem 2.3rem;
+    /* padding-left: 2.3rem; */
     border-bottom: .12rem dashed #a0a0a0;
 
     background:
