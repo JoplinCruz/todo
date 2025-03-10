@@ -1,0 +1,14 @@
+@media screen and (max-width: 768px) {
+    .task-title__container {
+        width: 90vw;
+    }
+    .task-input__container {
+        width: 90%;
+    }
+    .input__container {
+        width: 90%;
+    }
+    .cell__container {
+        width: 86%;
+    }
+}
