@@ -38,20 +38,47 @@ class MakeColor {
         return color;
     }
 }
-const makeColor = new MakeColor();
-const taskStorage = JSON.parse(localStorage.getItem("data")) || [];
-function saveTaskList(data) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let taskString = JSON.stringify(data);
-        try {
-            yield localStorage.setItem("data", taskString);
-        }
-        catch (error) {
-            console.error(error);
-        }
-    });
+class TaskStorage {
+    constructor() {
+        this.tasks = JSON.parse(localStorage.getItem("data")) || [];
+    }
+    load() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.tasks.length) {
+                for (let task of this.tasks) {
+                    yield renderTask(task.task, task.checked);
+                }
+            }
+        });
+    }
+    save() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let taskString = JSON.stringify(this.tasks);
+            try {
+                yield localStorage.setItem("data", taskString);
+            }
+            catch (error) {
+                console.error(error);
+            }
+        });
+    }
+    add(text, check) {
+        let data = {
+            task: text,
+            checked: check,
+        };
+        this.tasks.push(data);
+    }
+    update(index, check) {
+        this.tasks[index].checked = check;
+    }
+    delete(index) {
+        this.tasks.splice(index, 1);
+    }
 }
-function changeCell(event) {
+const makeColor = new MakeColor();
+const taskStorage = new TaskStorage();
+function changeTask(event) {
     return __awaiter(this, void 0, void 0, function* () {
         var _a, _b, _c;
         let target = event.target;
@@ -59,24 +86,24 @@ function changeCell(event) {
         let index = [].indexOf.call(taskList === null || taskList === void 0 ? void 0 : taskList.children, parent);
         if (target.className === "remove") {
             taskList === null || taskList === void 0 ? void 0 : taskList.removeChild(parent);
-            taskStorage.splice(index, 1);
+            taskStorage.delete(index);
         }
         if (target.className === "check") {
             if ((_a = parent === null || parent === void 0 ? void 0 : parent.children.namedItem("task-text")) === null || _a === void 0 ? void 0 : _a.classList.contains("marked")) {
                 target.innerText = "○";
                 (_b = parent === null || parent === void 0 ? void 0 : parent.children.namedItem("task-text")) === null || _b === void 0 ? void 0 : _b.classList.remove("marked");
-                taskStorage[index].checked = false;
+                taskStorage.update(index, false);
             }
             else {
                 target.innerText = "✓";
                 (_c = parent === null || parent === void 0 ? void 0 : parent.children.namedItem("task-text")) === null || _c === void 0 ? void 0 : _c.classList.add("marked");
-                taskStorage[index].checked = true;
+                taskStorage.update(index, true);
             }
         }
-        yield saveTaskList(taskStorage);
+        yield taskStorage.save();
     });
 }
-function createCell(taskText, checked) {
+function renderTask(taskText, checked) {
     return __awaiter(this, void 0, void 0, function* () {
         let checkChar = checked ? "✓" : "○";
         let cell = document.createElement("li"), check = document.createElement("span"), task = document.createElement("p"), remove = document.createElement("span");
@@ -95,7 +122,7 @@ function createCell(taskText, checked) {
             yield cell.appendChild(remove);
             let color = makeColor.get();
             cell.style.background = `linear-gradient(to right, var(--color-transparent), var(${color}) 25%, var(${color}) 75%, var(--color-transparent) 100%)`;
-            yield cell.addEventListener("click", changeCell);
+            yield cell.addEventListener("click", changeTask);
             yield taskList.appendChild(cell);
         }
         catch (error) {
@@ -107,12 +134,8 @@ function addTask(taskText) {
     return __awaiter(this, void 0, void 0, function* () {
         if (taskText) {
             try {
-                yield createCell(taskText, false);
-                let data = {
-                    checked: false,
-                    task: taskText,
-                };
-                taskStorage.push(data);
+                yield renderTask(taskText, false);
+                taskStorage.add(taskText, false);
                 inputTask.value = "";
             }
             catch (error) {
@@ -125,7 +148,7 @@ buttonAdd === null || buttonAdd === void 0 ? void 0 : buttonAdd.addEventListener
     let taskText = inputTask === null || inputTask === void 0 ? void 0 : inputTask.value;
     try {
         yield addTask(taskText);
-        yield saveTaskList(taskStorage);
+        yield taskStorage.save();
     }
     catch (error) {
         console.error(error);
@@ -136,7 +159,7 @@ inputTask === null || inputTask === void 0 ? void 0 : inputTask.addEventListener
         let taskText = inputTask === null || inputTask === void 0 ? void 0 : inputTask.value;
         try {
             yield addTask(taskText);
-            yield saveTaskList(taskStorage);
+            yield taskStorage.save();
         }
         catch (error) {
             console.error(error);
@@ -145,10 +168,6 @@ inputTask === null || inputTask === void 0 ? void 0 : inputTask.addEventListener
 }));
 window.onload = (event) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("Welcome to the ToDO List");
-    if (taskStorage.length) {
-        for (let task of taskStorage) {
-            yield createCell(task.task, task.checked);
-        }
-    }
+    yield taskStorage.load();
 });
 // cellDefault?.addEventListener("click", changeCell);
