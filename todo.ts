@@ -4,11 +4,23 @@ const buttonAdd = document.querySelector(
 ) as HTMLButtonElement;
 const taskList = document.querySelector("#task-list") as HTMLUListElement;
 
+type Task = {
+    checked?: boolean;
+    task?: string;
+};
 interface ColorMaker {
     colors: string[];
     shadow: string[];
     lastColor: string;
     get: () => string;
+}
+interface StoreTasks {
+    tasks: Task[];
+    load: () => void;
+    save: () => void;
+    add: (text: string, check: boolean) => void;
+    update: (index: number, check: boolean) => void;
+    delete: (index: number) => void;
 }
 class MakeColor implements ColorMaker {
     colors: string[];
@@ -42,34 +54,57 @@ class MakeColor implements ColorMaker {
         return color;
     }
 }
+class TaskStorage implements StoreTasks {
+    tasks: Task[];
+    constructor() {
+        this.tasks = JSON.parse(localStorage.getItem("data") as string) || [];
+    }
 
-const makeColor = new MakeColor();
+    async load() {
+        if (this.tasks.length) {
+            for (let task of this.tasks) {
+                await renderTask(task.task as string, task.checked as boolean);
+            }
+        }
+    }
 
-type Task = {
-    checked: boolean;
-    task: string;
-};
+    async save() {
+        let taskString = JSON.stringify(this.tasks);
+        try {
+            await localStorage.setItem("data", taskString);
+        } catch (error) {
+            console.error(error);
+        }
+    }
 
-const taskStorage: Task[] =
-    JSON.parse(localStorage.getItem("data") as string) || [];
+    add(text: string, check: boolean) {
+        let data: Task = {
+            task: text,
+            checked: check,
+        };
+        this.tasks.push(data);
+    }
 
-async function saveTaskList(data: Task[]) {
-    let taskString = JSON.stringify(data);
-    try {
-        await localStorage.setItem("data", taskString);
-    } catch (error) {
-        console.error(error);
+    update(index: number, check: boolean) {
+        this.tasks[index].checked = check;
+    }
+
+    delete(index: number) {
+        this.tasks.splice(index, 1);
     }
 }
 
-async function changeCell(event: Event) {
+const makeColor = new MakeColor();
+const taskStorage = new TaskStorage();
+
+async function changeTask(event: Event) {
     let target = event.target as HTMLElement;
     let parent = target.offsetParent;
     let index: number = [].indexOf.call(taskList?.children, parent as never);
 
     if (target.className === "remove") {
         taskList?.removeChild(parent as Node);
-        taskStorage.splice(index, 1);
+        taskStorage.delete(index);
     }
     if (target.className === "check") {
         if (
@@ -79,17 +114,17 @@ async function changeCell(event: Event) {
         ) {
             target.innerText = "○";
             parent?.children.namedItem("task-text")?.classList.remove("marked");
-            taskStorage[index].checked = false;
+            taskStorage.update(index, false);
         } else {
             target.innerText = "✓";
             parent?.children.namedItem("task-text")?.classList.add("marked");
-            taskStorage[index].checked = true;
+            taskStorage.update(index, true);
         }
     }
-    await saveTaskList(taskStorage);
+    await taskStorage.save();
 }
 
-async function createCell(taskText: string, checked: boolean) {
+async function renderTask(taskText: string, checked: boolean) {
     let checkChar: string = checked ? "✓" : "○";
 
     let cell = document.createElement("li"),
@@ -115,7 +150,7 @@ async function createCell(taskText: string, checked: boolean) {
         let color: string = makeColor.get();
         cell.style.background = `linear-gradient(to right, var(--color-transparent), var(${color}) 25%, var(${color}) 75%, var(--color-transparent) 100%)`;
 
-        await cell.addEventListener("click", changeCell);
+        await cell.addEventListener("click", changeTask);
 
         await taskList.appendChild(cell);
     } catch (error) {
@@ -126,14 +161,8 @@ async function createCell(taskText: string, checked: boolean) {
 async function addTask(taskText: string) {
     if (taskText) {
         try {
-            await createCell(taskText, false);
-
-            let data: Task = {
-                checked: false,
-                task: taskText,
-            };
-            taskStorage.push(data);
-
+            await renderTask(taskText, false);
+            taskStorage.add(taskText, false);
             inputTask.value = "";
         } catch (error) {
             console.error(error);
@@ -145,7 +174,7 @@ buttonAdd?.addEventListener("click", async (event) => {
     let taskText = inputTask?.value;
     try {
         await addTask(taskText);
-        await saveTaskList(taskStorage);
+        await taskStorage.save();
     } catch (error) {
         console.error(error);
     }
@@ -156,7 +185,7 @@ inputTask?.addEventListener("keydown", async (event) => {
         let taskText = inputTask?.value;
         try {
             await addTask(taskText);
-            await saveTaskList(taskStorage);
+            await taskStorage.save();
         } catch (error) {
             console.error(error);
         }
@@ -165,11 +194,7 @@ inputTask?.addEventListener("keydown", async (event) => {
 
 window.onload = async (event) => {
     console.log("Welcome to the ToDO List");
-    if (taskStorage.length) {
-        for (let task of taskStorage) {
-            await createCell(task.task, task.checked);
-        }
-    }
+    await taskStorage.load();
 };
 
 // cellDefault?.addEventListener("click", changeCell);
